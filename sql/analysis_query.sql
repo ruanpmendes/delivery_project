@@ -1,5 +1,105 @@
 -- ==============================================================================================================================================================
--- CONSULTA 1: SEGMENTAÇÃO DE PEDIDOS POR FAIXA DE VALOR (USANDO CASE)
+-- CONSULTA 1: PRODUTOS VENDIDOS POR CATEGORIA
+-- ==============================================================================================================================================================
+-- PROBLEMA DE NEGÓCIO: A gerência quer entender a popularidade dos produtos por categoria para otimizar o cardápio e estoque.
+-- OBJETIVO: Contar o número total de itens vendidos para cada categoria de produto (ex: Pizza, Bebida, Sobremesa).
+-- FERRAMENTA UTILIZADA: Funções de agregação (COUNT) e GROUP BY.
+
+SELECT
+	c.nome_categoria,
+	COUNT(ip.id_item) AS total_itens_vendidos -- Total de itens vendidos para a categoria
+FROM
+    item_pedido ip
+JOIN
+    produto p ON ip.id_produto = p.id_produto
+JOIN
+    categoria c ON p.id_categoria = c.id_categoria
+GROUP BY
+    c.nome_categoria -- Agrupa os resultados por nome da categoria
+ORDER BY
+    total_itens_vendidos DESC; -- Ordena pelas categorias com mais itens vendidos
+
+-- ==============================================================================================================================================================
+-- CONSULTA 2: CLIENTES COM MAIS PEDIDOS
+-- ==============================================================================================================================================================
+-- PROBLEMA DE NEGÓCIO: Identificar os clientes mais fiéis e engajados para programas de fidelidade ou promoções personalizadas
+-- OBJETIVO: Listar os clientes que realizaram o maior número de pedidos.
+-- FERRAMENTA UTILIZADA: Funções de agregação (COUNT) e GROUP BY
+
+SELECT
+	c.nome AS nome_cliente, -- Nome do cliente
+	COUNT(p.id_pedido) AS qtd_pedidos -- Quantidade total de pedidos feitos pelo cliente
+FROM
+    pedido p
+JOIN
+    cliente c ON p.id_cliente = c.id_cliente
+GROUP BY
+    nome_cliente -- Agrupa os resultados por nome do cliente
+ORDER BY
+    qtd_pedidos DESC -- Ordena para mostrar os clientes com mais pedidos primeiro
+
+-- ==============================================================================================================================================================
+-- CONSULTA 3: PEDIDOS POR STATUS
+-- ==============================================================================================================================================================
+-- PROBLEMA DE NEGÓCIO: Monitorar o fluxo operacional dos pedidos e a distribuição dos status atuais.
+-- OBJETIVO: Contar quantos pedidos estão em cada fase (ex: 'Pendente', 'Preparando', 'Entregue').
+-- FERRAMENTA UTILIZADA: Funções de agregação (COUNT) e GROUP BY.
+
+SELECT
+	s.nome_status,
+	COUNT(p.id_pedido) AS qtd_pedidos -- Quantidade de pedidos por status
+FROM
+    pedido p
+JOIN
+    status_pedido s ON p.id_status = s.id_status
+GROUP BY
+    s.nome_status -- Agrupa os resultados por nome do status
+ORDER BY
+    qtd_pedidos DESC; -- Ordena para mostrar os status com mais pedidos primeiro
+
+-- ==============================================================================================================================================================
+-- CONSULTA 4: FATURAMENTO POR MÊS/ANO
+-- ==============================================================================================================================================================
+-- PROBLEMA DE NEGÓCIO: Avaliar a performance de vendas ao longo do tempo para identificar tendências e sazonalidades.
+-- OBJETIVO: Calcular o faturamento total da pizzaria por mês e ano.
+-- FERRAMENTA UTILIZADA: Funções de extração de data (EXTRACT), funções de agregação (SUM) e GROUP BY.
+
+SELECT
+	EXTRACT(YEAR FROM p.data_pedido) AS ano, -- Extrai o ano da data do pedido
+    EXTRACT(MONTH FROM p.data_pedido) AS mes, -- Extrai o mês da data do pedido
+    TRUNC(SUM(vvp.valor_total), 2) AS faturamento_mensal -- Soma o valor total dos pedidos para o mês/ano
+FROM
+    pedido p
+JOIN
+    vw_valor_pedido vvp ON p.id_pedido = vvp.id_pedido
+GROUP BY
+    ano, mes -- Agrupa os resultados por ano e mês
+ORDER BY
+    ano, mes; -- Ordena cronologicamente por ano e mês
+
+-- ==============================================================================================================================================================
+-- CONSULTA 5: ANÁLISE DE VENDAS DETALHADA POR PERÍODO
+-- ============================================================================================================================================================
+-- PROBLEMA DE NEGÓCIO: A gerência precisa de um resumo diário da performance de vendas para tomar decisões rápidas.
+-- OBJETIVO: Fornecer métricas essenciais como faturamento, número de pedidos e ticket médio para cada dia.
+-- FERRAMENTAS UTILIZADAS: Funções de extração de data (DATE), funções de agregação (COUNT, SUM, AVG) e GROUP BY.
+
+SELECT
+	DATE(p.data_pedido) AS data_do_pedido, -- Extrai apenas a data do pedido (sem a hora)
+    COUNT(p.id_pedido) AS qtd_pedidos, -- Quantidade total de pedidos no dia
+    TRUNC(SUM(vvp.valor_total), 2) AS faturamento_diario, -- Faturamento total no dia
+    TRUNC(AVG(vvp.valor_total), 2) AS ticket_medio_diario -- Ticket médio dos pedidos no dia
+FROM
+    pedido p
+JOIN
+    vw_valor_pedido vvp ON p.id_pedido = vvp.id_pedido
+GROUP BY
+    DATE(p.data_pedido) -- Agrupa os resultados por dia
+ORDER BY
+    data_do_pedido ASC; -- Ordena os resultados cronologicamente
+	
+-- ==============================================================================================================================================================
+-- CONSULTA 6: SEGMENTAÇÃO DE PEDIDOS POR FAIXA DE VALOR (USANDO CASE)
 -- ==============================================================================================================================================================
 -- PROBLEMA DE NEGÓCIO: A gerência quer analisar o perfil de consumo para planejar promoções e estratégias de marketing.
 -- OBJETIVO: Classificar os pedidos em diferentes faixas de valor (Baixo, Médio, Alto) e exibir a quantidade de pedidos e o ticket médio para cada faixa.
@@ -28,7 +128,7 @@ ORDER BY
     ticket_medio DESC;
 
 -- ==============================================================================================================================================================
--- CONSULTA 2: PRODUTOS MAIS VENDIDOS POR CATEGORIA E SUA REPRESENTATIVIDADE (USANDO CTE E WINDOW FUNCTION)
+-- CONSULTA 7: PRODUTOS MAIS VENDIDOS POR CATEGORIA E SUA REPRESENTATIVIDADE (USANDO CTE E WINDOW FUNCTION)
 -- ==============================================================================================================================================================
 -- PROBLEMA DE NEGÓCIO: A empresa quer identificar os produtos mais vendidos dentro de cada categoria e entender sua participação nas vendas totais da categoria.
 -- OBJETIVO: Exibir os itens mais vendidos de cada categoria e calcular a porcentagem que cada um corresponde da venda total da categoria.
@@ -38,8 +138,8 @@ ORDER BY
 -- Calcula o total de unidades vendidas para cada produto, agrupado por categoria e nome do produto.
 WITH venda_por_produto AS (
     SELECT
-        c.categoria AS nome_categoria, -- Nome da categoria do produto
-        p.produto AS nome_produto,     -- Nome do produto
+        c.nome_categoria,
+        p.nome_produto,
         SUM(ip.quantidade) AS total_vendido -- Soma a quantidade vendida de cada item
     FROM
         item_pedido ip
@@ -48,7 +148,7 @@ WITH venda_por_produto AS (
     JOIN
         categoria c ON p.id_categoria = c.id_categoria
     GROUP BY
-        c.categoria, p.produto -- Agrupa por categoria e produto para somar as quantidades
+        c.nome_categoria, p.nome_produto -- Agrupa por categoria e produto para somar as quantidades
 )
 SELECT
     nome_categoria,
@@ -64,7 +164,7 @@ ORDER BY
     nome_categoria, total_vendido DESC; -- Ordena primeiro por categoria e depois pelo total vendido (decrescente)
 
 -- ==============================================================================================================================================================
--- CONSULTA 3: DESEMPENHO DOS ENTREGADORES (TEMPO MÉDIO DE ENTREGA)
+-- CONSULTA 8: DESEMPENHO DOS ENTREGADORES (TEMPO MÉDIO DE ENTREGA)
 -- ==============================================================================================================================================================
 -- PROBLEMA DE NEGÓCIO: A empresa quer avaliar o desempenho dos entregadores com base no tempo médio de entrega.
 -- OBJETIVO: Exibir a quantidade de entregas realizadas por cada entregador e seu tempo médio de entrega em minutos.
@@ -137,7 +237,7 @@ ORDER BY
     tempo_medio_minutos ASC; -- Ordena pelo tempo médio para ver os mais rápidos primeiro
 
 -- ==============================================================================================================================================================
--- CONSULTA 4: TICKET MÉDIO POR CLIENTE (USANDO VIEW)
+-- CONSULTA 9: TICKET MÉDIO POR CLIENTE (USANDO VIEW)
 -- ==============================================================================================================================================================
 -- PROBLEMA DE NEGÓCIO: A gestão quer saber qual o ticket médio de pedidos por cliente para identificar clientes de alto valor.
 -- OBJETIVO: Exibir a quantidade de pedidos realizados por cada cliente e seu ticket médio.
@@ -163,7 +263,7 @@ ORDER BY
     ticket_medio DESC; -- Ordena os clientes com base no seu ticket médio, do maior para o menor.
 
 -- ==============================================================================================================================================================
--- CONSULTA 5: INFORMAÇÕES PARA RODADA DE INVESTIMENTOS (MÉTRICAS FINANCEIRAS GERAIS)
+-- CONSULTA 10: INFORMAÇÕES PARA RODADA DE INVESTIMENTOS (MÉTRICAS FINANCEIRAS GERAIS)
 -- ============================================================================================================================================================
 -- PROBLEMA DE NEGÓCIO: A empresa precisa de métricas financeiras consolidadas para apresentar a potenciais investidores.
 -- OBJETIVO: Fornecer um resumo financeiro robusto, incluindo faturamento, custos, lucro, markup e indicadores de volume.
