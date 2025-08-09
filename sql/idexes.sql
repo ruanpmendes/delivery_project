@@ -1,0 +1,14 @@
+CREATE INDEX idx_cliente_cpf ON Cliente(cpf);
+CREATE INDEX idx_entregador_cpf ON Entregador(cpf);
+CREATE INDEX idx_endereco_id_cliente ON Endereco(id_cliente);
+CREATE INDEX idx_produto_id_categoria ON Produto(id_categoria);
+CREATE INDEX idx_adicional_id_categoria ON Adicional(id_categoria);
+CREATE INDEX idx_pedido_id_cliente ON Pedido (id_cliente);
+CREATE INDEX idx_pedido_id_entregador ON Pedido (id_entregador);
+CREATE INDEX idx_pedido_id_pagamento ON Pedido (id_forma_pagamento);
+CREATE INDEX idx_pedido_id_status ON Pedido (id_status);
+CREATE INDEX idx_item_pedido_id_pedido ON Item_pedido (id_pedido);
+CREATE INDEX idx_item_pedido_id_produto ON Item_pedido (id_produto);
+CREATE INDEX idx_item_pedido_adicional_id_item_pedido ON Item_pedido_adicional (id_item_pedido);
+CREATE INDEX idx_item_pedido_adicional_id_adicional ON Item_pedido_adicional (id_adicional);
+CREATE INDEX idx_historico_status_id_pedido ON Historico_status_pedido (id_pedido);
