@@ -29,12 +29,13 @@ Tudo começa com uma boa base, certo? Pensei em como organizar as informações 
 
 Diagrama de Entidade-Relacionamento (ER)
 Diagrama de Entidade-Relacionamento Detalhado (DER)
+
 💻 Como Colocar a Mão na Massa e Ver Acontecer!
 Quer ver a pizzaria funcionando no seu computador? É super fácil!
 
 Tenha o PostgreSQL instalado: Se ainda não tem, baixe por aqui.
 
-Crie seu Banco de Dados: Você pode criar o banco de dados usando seu cliente favorito (como pgAdmin). É super importante que ele use a codificação UTF-8 para que nossos acentos e caracteres especiais funcionem perfeitamente!
+Crie seu Banco de Dados: Você pode criar o banco de dados usando o pgAdmin.
 
 Abra o pgAdmin.
 
@@ -42,7 +43,9 @@ Clique com o botão direito em "Databases" (ou "Bancos de Dados") -> "Create" (C
 
 No campo "Database" (Banco de Dados), digite o nome que você quer (ex: pizzaria_delivery_db).
 
-Na aba "Definition" (Definição), certifique-se de que "Encoding" (Codificação) esteja definido como UTF8. Para "Collation" (Ordenação) e "Character Type" (Tipo de Caractere), selecione uma opção que contenha UTF-8 (ex: Portuguese_Brazil.1252 se for Windows ou pt_BR.UTF-8 se for Linux/Mac - ou as opções genéricas C ou en_US com UTF-8 se as específicas não aparecerem).
+No campo "Schemas" (ou "Esquemas") -> "Create" (Criar) -> "Schema" (Esquema) -> Dê um nome que você queira (ex: pizzaria_delivery)
+
+Clique com o botão direito em cima do nome que você definiu -> "Query tool" ("Ferramenta de consulta")
 
 Rode os Scripts SQL: Agora, entre na pasta sql/ do projeto que você clonou e execute os arquivos na ordem certinha. Eles são a "receita" para montar e popular o banco:
 
